@@ -80,8 +80,8 @@ export const createOrder = (req, res) => {
           }
 
           const orderQuery = `
-            INSERT INTO orders (user_id, user_name, total_price, total_amount, customer_name, email, address, city, zip_code, payment_method, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+            INSERT INTO orders (user_id, user_name, total_price, total_amount, email, address, city, zip_code, payment_method, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
           `;
 
           db.query(
@@ -91,7 +91,6 @@ export const createOrder = (req, res) => {
               user_name,
               total_price,
               total_price,
-              `${firstName || ""} ${lastName || ""}`.trim(),
               email || "",
               address || "",
               city || "",

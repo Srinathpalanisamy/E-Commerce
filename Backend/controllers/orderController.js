@@ -1,7 +1,7 @@
 import db from "../config/db.js";
 
 export const createOrder = (req, res) => {
-  const { items, total_price, address, city, zipCode, zip_code, phone } = req.body;
+  const { items, total_price, address, city, zipCode, zip_code, phone, paymentMethod, firstName, lastName, email } = req.body;
   const user_id = req.user?.user_id;
   const user_name = req.user?.user_name;
 
@@ -80,13 +80,23 @@ export const createOrder = (req, res) => {
           }
 
           const orderQuery = `
-            INSERT INTO orders (user_id, user_name, total_price)
-            VALUES (?, ?, ?)
+            INSERT INTO orders (user_id, user_name, total_price, customer_name, email, address, city, zip_code, payment_method)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
           `;
 
           db.query(
             orderQuery,
-            [user_id, user_name, total_price],
+            [
+              user_id,
+              user_name,
+              total_price,
+              `${firstName || ""} ${lastName || ""}`.trim(),
+              email || "",
+              address || "",
+              city || "",
+              zipCode || zip_code || "",
+              paymentMethod || "",
+            ],
             (orderError, orderResult) => {
               if (orderError) {
                 return db.rollback(() => {

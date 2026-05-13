@@ -37,6 +37,17 @@ const Checkout = () => {
 
   const total = cartTotalPrice;
 
+  // Get email from JWT token as fallback
+  const getEmailFromToken = () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return "";
+      return JSON.parse(atob(token.split(".")[1])).email || "";
+    } catch {
+      return "";
+    }
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -47,7 +58,7 @@ const Checkout = () => {
           ...current,
           firstName: nameParts[0] || "",
           lastName: nameParts.slice(1).join(" "),
-          email: profile.email || "",
+          email: profile.email || getEmailFromToken(),
           phone: profile.phone || "",
           address: profile.address || "",
           city: profile.city || "",
@@ -55,6 +66,11 @@ const Checkout = () => {
         }));
       } catch (err) {
         console.error("Error fetching profile:", err);
+        // If profile fetch fails, get email from token
+        setFormData((current) => ({
+          ...current,
+          email: current.email || getEmailFromToken(),
+        }));
       }
     };
 
@@ -67,8 +83,6 @@ const Checkout = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("formData:", formData); // ← add this
-  console.log("email:", formData.email);
 
     if (cart.length === 0) return;
 
@@ -86,7 +100,7 @@ const Checkout = () => {
         city: formData.city,
         zipCode: formData.zipCode,
         phone: formData.phone,
-        email: formData.email,
+        email: formData.email || getEmailFromToken(),
         paymentMethod,
         items,
         total_price: total,
@@ -296,7 +310,7 @@ const Checkout = () => {
                       variant="standard"
                     />
                   </Grid>
-                 
+
                   <Grid item xs={12}>
                     <TextField
                       required

@@ -84,6 +84,7 @@ const Checkout = () => {
         city: formData.city,
         zipCode: formData.zipCode,
         phone: formData.phone,
+        email: formData.email,
         paymentMethod,
         items,
         total_price: total,

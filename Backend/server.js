@@ -42,14 +42,7 @@ runSchemaQuery(
   )`
 );
 
-runSchemaQuery(
-  "Users table alter",
-  `ALTER TABLE users 
-   ADD COLUMN IF NOT EXISTS phone VARCHAR(20),
-   ADD COLUMN IF NOT EXISTS address VARCHAR(255),
-   ADD COLUMN IF NOT EXISTS city VARCHAR(100),
-   ADD COLUMN IF NOT EXISTS zip_code VARCHAR(20)`
-);
+
 
 runSchemaQuery(
   "Products table",
@@ -107,11 +100,7 @@ runSchemaQuery(
   )`
 );
 
-runSchemaQuery(
-  "Cart table alter",
-  `ALTER TABLE cart 
-   ADD COLUMN IF NOT EXISTS user_id INT NOT NULL DEFAULT 1 AFTER id`
-);
+
 
 
 

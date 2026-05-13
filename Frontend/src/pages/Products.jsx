@@ -4,7 +4,7 @@ import api from "../services/api";
 import ProductCard from "../components/product/ProductCard";
 import "./category/category.css";
 
-const API_URL = "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Products = () => {
   const [products, setProducts] = useState([]);

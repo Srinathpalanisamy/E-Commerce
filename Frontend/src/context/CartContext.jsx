@@ -32,7 +32,7 @@ export const CartProvider = ({ children }) => {
         ...item,
         image: item.image.startsWith("http")
           ? item.image
-          : `http://localhost:5000${item.image}`,
+          : `${import.meta.env.VITE_API_URL}${item.image}`,
       }));
 
       setCart(cartItems);

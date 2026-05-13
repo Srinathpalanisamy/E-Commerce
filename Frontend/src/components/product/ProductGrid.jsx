@@ -3,7 +3,7 @@ import api from "../../services/api";
 import { Box } from "@mui/material";
 import ProductCard from "./ProductCard";
 
-const API_URL = "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ProductGrid = ({ category }) => {
   const [products, setProducts] = useState([]);

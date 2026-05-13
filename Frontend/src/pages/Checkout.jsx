@@ -67,6 +67,8 @@ const Checkout = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("formData:", formData); // ← add this
+  console.log("email:", formData.email);
 
     if (cart.length === 0) return;
 

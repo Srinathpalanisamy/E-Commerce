@@ -18,6 +18,64 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { createOrder } from "../services/orderService";
 import { getProfile } from "../services/authService";
 
+const validatableFields = [
+  "firstName",
+  "email",
+  "phone",
+  "address",
+  "city",
+  "zipCode",
+];
+
+const createFieldState = (value) =>
+  validatableFields.reduce((state, field) => {
+    state[field] = value;
+    return state;
+  }, {});
+
+const sanitizeFieldValue = (name, value) => {
+  switch (name) {
+    case "firstName":
+    case "city":
+      return value.replace(/\d/g, "");
+    case "phone":
+      return value.replace(/\D/g, "").slice(0, 10);
+    case "zipCode":
+      return value.replace(/\D/g, "");
+    default:
+      return value;
+  }
+};
+
+const validateField = (name, value) => {
+  const trimmedValue = value.trim();
+
+  switch (name) {
+    case "firstName":
+      if (!trimmedValue) return "First name is required.";
+      return /\d/.test(trimmedValue) ? "Name cannot contain numbers." : "";
+    case "email":
+      if (!trimmedValue) return "Email address is required.";
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)
+        ? ""
+        : "Enter a valid email address.";
+    case "phone": {
+      if (!trimmedValue) return "Phone number is required.";
+      return /^\d{10}$/.test(trimmedValue) ? "" : "Phone number must be 10 digits.";
+    }
+    case "address":
+      return trimmedValue ? "" : "Street address is required.";
+    case "city":
+      if (!trimmedValue) return "City is required.";
+      return /\d/.test(trimmedValue) ? "City cannot contain numbers." : "";
+    case "zipCode":
+      if (!trimmedValue) return "Postal code is required.";
+      return /^\d+$/.test(trimmedValue) ? "" : "Postal code must contain only numbers.";
+    default:
+      return "";
+  }
+};
+
 const Checkout = () => {
   const { cart, clearCart, cartTotalPrice } = useContext(CartContext);
   const navigate = useNavigate();
@@ -25,6 +83,8 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState(() => createFieldState(""));
+  const [touchedFields, setTouchedFields] = useState(() => createFieldState(false));
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -56,13 +116,13 @@ const Checkout = () => {
 
         setFormData((current) => ({
           ...current,
-          firstName: nameParts[0] || "",
+          firstName: sanitizeFieldValue("firstName", nameParts[0] || ""),
           lastName: nameParts.slice(1).join(" "),
           email: profile.email || getEmailFromToken(),
-          phone: profile.phone || "",
+          phone: sanitizeFieldValue("phone", profile.phone || ""),
           address: profile.address || "",
-          city: profile.city || "",
-          zipCode: profile.zip_code || "",
+          city: sanitizeFieldValue("city", profile.city || ""),
+          zipCode: sanitizeFieldValue("zipCode", profile.zip_code || ""),
         }));
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -78,7 +138,30 @@ const Checkout = () => {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const sanitizedValue = sanitizeFieldValue(name, value);
+
+    setFormData((current) => ({ ...current, [name]: sanitizedValue }));
+
+    if (!validatableFields.includes(name)) return;
+
+    setTouchedFields((current) => ({ ...current, [name]: true }));
+    setFieldErrors((current) => ({
+      ...current,
+      [name]: validateField(name, sanitizedValue),
+    }));
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+
+    if (!validatableFields.includes(name)) return;
+
+    setTouchedFields((current) => ({ ...current, [name]: true }));
+    setFieldErrors((current) => ({
+      ...current,
+      [name]: validateField(name, value),
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -86,7 +169,19 @@ const Checkout = () => {
 
     if (cart.length === 0) return;
 
+    const nextFieldErrors = createFieldState("");
+    validatableFields.forEach((field) => {
+      nextFieldErrors[field] = validateField(field, formData[field]);
+    });
+
+    setTouchedFields(createFieldState(true));
+    setFieldErrors(nextFieldErrors);
     setError("");
+
+    if (Object.values(nextFieldErrors).some(Boolean)) {
+      return;
+    }
+
     setIsPlacingOrder(true);
 
     try {
@@ -307,6 +402,9 @@ const Checkout = () => {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touchedFields.firstName && fieldErrors.firstName)}
+                      helperText={touchedFields.firstName ? fieldErrors.firstName : ""}
                       variant="standard"
                     />
                   </Grid>
@@ -320,16 +418,25 @@ const Checkout = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touchedFields.email && fieldErrors.email)}
+                      helperText={touchedFields.email ? fieldErrors.email : ""}
                       variant="standard"
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <TextField
+                      required
                       fullWidth
+                      type="tel"
                       label="Phone Number"
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touchedFields.phone && fieldErrors.phone)}
+                      helperText={touchedFields.phone ? fieldErrors.phone : ""}
+                      inputProps={{ maxLength: 10, inputMode: "numeric" }}
                       variant="standard"
                     />
                   </Grid>
@@ -341,6 +448,9 @@ const Checkout = () => {
                       name="address"
                       value={formData.address}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touchedFields.address && fieldErrors.address)}
+                      helperText={touchedFields.address ? fieldErrors.address : ""}
                       variant="standard"
                     />
                   </Grid>
@@ -352,6 +462,9 @@ const Checkout = () => {
                       name="city"
                       value={formData.city}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touchedFields.city && fieldErrors.city)}
+                      helperText={touchedFields.city ? fieldErrors.city : ""}
                       variant="standard"
                     />
                   </Grid>
@@ -363,6 +476,10 @@ const Checkout = () => {
                       name="zipCode"
                       value={formData.zipCode}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={Boolean(touchedFields.zipCode && fieldErrors.zipCode)}
+                      helperText={touchedFields.zipCode ? fieldErrors.zipCode : ""}
+                      inputProps={{ inputMode: "numeric" }}
                       variant="standard"
                     />
                   </Grid>

@@ -78,7 +78,7 @@ runSchemaQuery(
     zip_code VARCHAR(20),
     payment_method VARCHAR(50),
     total_amount DECIMAL(10,2),
-    status VARCHAR(50) DEFAULT 'placed',
+    status VARCHAR(50) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   )`

@@ -43,6 +43,15 @@ runSchemaQuery(
 );
 
 runSchemaQuery(
+  "Users table alter",
+  `ALTER TABLE users 
+   ADD COLUMN IF NOT EXISTS phone VARCHAR(20),
+   ADD COLUMN IF NOT EXISTS address VARCHAR(255),
+   ADD COLUMN IF NOT EXISTS city VARCHAR(100),
+   ADD COLUMN IF NOT EXISTS zip_code VARCHAR(20)`
+);
+
+runSchemaQuery(
   "Products table",
   `CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,

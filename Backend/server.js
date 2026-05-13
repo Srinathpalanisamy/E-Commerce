@@ -53,14 +53,7 @@ runSchemaQuery(
   )`
 );
 
-runSchemaQuery(
-  "Cart table",
-  `CREATE TABLE IF NOT EXISTS cart (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT NOT NULL,
-    quantity INT NOT NULL DEFAULT 1
-  )`
-);
+
 
 runSchemaQuery(
   "Orders table",
@@ -93,6 +86,26 @@ runSchemaQuery(
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
   )`
 );
+
+runSchemaQuery(
+  "Cart table",
+  `CREATE TABLE IF NOT EXISTS cart (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`
+);
+
+runSchemaQuery(
+  "Cart table alter",
+  `ALTER TABLE cart 
+   ADD COLUMN IF NOT EXISTS user_id INT NOT NULL DEFAULT 1 AFTER id`
+);
+
+
+
 
 app.get("/", (req, res) => {
   res.send("API running...");

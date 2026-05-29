@@ -11,6 +11,29 @@ dotenv.config();
 
 const app = express();
 
+const configuredOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.CORS_ORIGIN,
+]
+  .flatMap((origin) => (origin || "").split(","))
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const allowedOrigins = [...configuredOrigins, "http://localhost:5173"];
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || configuredOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 const runSchemaQuery = (label, query) => {
   db.query(query, (error) => {
     if (error) {
@@ -21,7 +44,7 @@ const runSchemaQuery = (label, query) => {
   });
 };
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/images", express.static("public/images"));

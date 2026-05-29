@@ -1,19 +1,16 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";
+import { getJwtSecret } from "../config/auth.js";
 
 const generateToken = (user) => {
-  if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is not configured");
-  }
-
   return jwt.sign(
     {
       user_id: user.user_id,
       user_name: user.user_name,
       email: user.email,
     },
-    process.env.JWT_SECRET,
+    getJwtSecret(),
     { expiresIn: "7d" }
   );
 };

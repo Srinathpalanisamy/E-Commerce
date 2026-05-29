@@ -8,7 +8,7 @@ export const protect = (req, res, next) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
 
   if (!token) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -20,9 +20,15 @@ export const protect = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.user_id || decoded.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     const query = "SELECT id, user_name, email FROM users WHERE id = ?";
 
-    db.query(query, [decoded.user_id], (error, result) => {
+    db.query(query, [userId], (error, result) => {
       if (error) {
         console.log(error);
         return res.status(500).json({ error: "Authentication failed" });

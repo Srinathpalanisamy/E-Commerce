@@ -11,21 +11,11 @@ export const loginUser = async (payload) => {
 };
 
 export const getProfile = async () => {
-  const token = localStorage.getItem("token");
-  const response = await api.get("/api/auth/profile", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.get("/api/auth/profile");
   return response.data;
 };
 
 export const updateProfile = async (payload) => {
-  const token = localStorage.getItem("token");
-  const response = await api.put("/api/auth/profile", payload, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.put("/api/auth/profile", payload);
   return response.data;
 };

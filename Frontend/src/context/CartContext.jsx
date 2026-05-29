@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
-import api from "../services/api";
+import api, { getStoredToken } from "../services/api";
 import { Snackbar, Alert } from "@mui/material";
 import { useAuth } from "./AuthContext";
 
@@ -15,7 +15,7 @@ export const CartProvider = ({ children }) => {
   });
 
   const fetchCart = async () => {
-    const authToken = localStorage.getItem("token");
+    const authToken = getStoredToken();
 
     if (!authToken) {
       setCart([]);
@@ -23,11 +23,7 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      const res = await api.get("/api/cart", {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
+      const res = await api.get("/api/cart");
       const cartItems = res.data.map((item) => ({
         ...item,
         image: item.image.startsWith("http")
@@ -57,7 +53,7 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product, quantity = 1) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getStoredToken();
 
       if (!token) {
         alert("Please login first");
@@ -69,11 +65,6 @@ export const CartProvider = ({ children }) => {
         {
           product_id: product.id,
           quantity,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       );
       await fetchCart();
@@ -115,7 +106,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = async (id, amount) => {
-    const authToken = localStorage.getItem("token");
+    const authToken = getStoredToken();
     const quantityChange = Number(amount);
     const previousCart = cart.map((item) => ({ ...item }));
     const currentItem = previousCart.find((item) => item.id === id);
@@ -149,15 +140,7 @@ export const CartProvider = ({ children }) => {
     );
 
     try {
-      await api.put(
-        `/api/cart/${id}`,
-        { amount: quantityChange },
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        }
-      );
+      await api.put(`/api/cart/${id}`, { amount: quantityChange });
     } catch (error) {
       console.error("Error updating cart quantity:", error);
       setCart(previousCart);

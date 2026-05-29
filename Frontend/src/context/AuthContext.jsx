@@ -1,19 +1,22 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 import { loginUser, registerUser } from "../services/authService";
+import { getStoredToken } from "../services/api";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => localStorage.getItem("token") || "");
+  const [token, setToken] = useState(() => getStoredToken());
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
   const persistAuth = (data) => {
-    localStorage.setItem("token", data.token);
+    const authToken = data.token.replace(/^Bearer\s+/i, "").trim();
+
+    localStorage.setItem("token", authToken);
     localStorage.setItem("user", JSON.stringify(data.user));
-    setToken(data.token);
+    setToken(authToken);
     setUser(data.user);
   };
 
